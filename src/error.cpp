@@ -42,6 +42,40 @@ void errorWarning(const char *fmt, ...) {
     MessageBox(NULL, buffer, "XU4 Warning", MB_OK | MB_ICONWARNING);
 }
 
+#elif defined(__amigaos__)
+
+/*
+ * AmigaOS: errors shown in an Intuition requester (amiga/amiga_sys.c) and
+ * on the Shell.
+ */
+
+extern "C" void amiga_message(const char *title, const char *text);
+
+void errorFatal(const char *fmt, ...) {
+    char buffer[1000];
+    va_list args;
+
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    fprintf(stderr, "xu4: error: %s\n", buffer);
+    amiga_message("xu4 error", buffer);
+
+    exit(1);
+}
+
+void errorWarning(const char *fmt, ...) {
+    char buffer[1000];
+    va_list args;
+
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    fprintf(stderr, "xu4: warning: %s\n", buffer);
+}
+
 #elif defined(MACOSX)
 
 /*

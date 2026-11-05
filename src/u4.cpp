@@ -47,15 +47,28 @@ using namespace std;
 
 
 
+#ifdef __amigaos__
+extern "C" void amiga_screens_init(void);
+#endif
+
 int main(int argc, char *argv[]) {
     Debug::initGlobal("debug/global.txt");
 
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
+#ifdef __amigaos__
+    amiga_screens_init();
+#endif
 
     if (!u4fsetup())
     {
+#ifdef __amigaos__
+        errorFatal( "xu4 needs the PC version of Ultima IV.\n\n"
+                    "Put ultima4.zip (or the files from it) in the\n"
+                    "xu4 drawer, or in a drawer named ultima4 inside it.\n"
+                    "Ultima IV is free from GOG.com; see the ReadMe.");
+#endif
         errorFatal( "xu4 requires the PC version of Ultima IV to be present. "
                     "It must either be in the same directory as the xu4 executable, "
                     "or in a subdirectory named \"ultima4\"."
