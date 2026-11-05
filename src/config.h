@@ -1,0 +1,70 @@
+/*
+ * config.h
+ */
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#include <string>
+#include <vector>
+#include <libxml/xmlmemory.h>
+
+class ConfigElement;
+
+/**
+ * Config is a singleton data provider interface which hides the storage
+ * format of the game configuration.
+ * It provides data in a form easily digestible for game engine modules.
+ */
+class Config {
+public:
+    Config();
+    ~Config();
+
+    //const char** getGames();
+    //void setGame(const char* name);
+
+    // Primary configurable elements.
+    const char* musicFile( uint32_t id );
+    const char* soundFile( uint32_t id );
+    // More to be added...
+
+    // Deprecated methods for manually parsing a tree.
+    static const Config *getInstance();
+    ConfigElement getElement(const std::string &name) const;
+};
+
+/**
+ * NOTE: This class is deprecated and will be eliminated over time.
+ *
+ * A single configuration element in the config tree.
+ */
+class ConfigElement {
+public:
+    ConfigElement(xmlNodePtr xmlNode);
+    ConfigElement(const ConfigElement &e);
+
+    ConfigElement &operator=(const ConfigElement &e);
+
+    const std::string getName() const { return name; }
+
+    bool exists(const std::string &name) const;
+    std::string getString(const std::string &name) const;
+    int getInt(const std::string &name, int defaultValue = 0) const;
+    bool getBool(const std::string &name) const;
+    int getEnum(const std::string &name, const char *enumValues[]) const;
+
+    std::vector<ConfigElement> getChildren() const;
+
+    xmlNodePtr getNode() const { return node; }
+
+private:
+    xmlNodePtr node;
+    std::string name;
+};
+
+extern Config* configService;
+bool configInit();
+void configFree();
+
+#endif /* CONFIG_H */
