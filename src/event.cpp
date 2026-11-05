@@ -490,8 +490,8 @@ KeyHandler::KeyHandler(Callback func, void *d, bool asyncronous) :
  */
 bool KeyHandler::globalHandler(int key) {
     switch(key) {
-#if defined(MACOSX)
-    case U4_META + 'q': /* Cmd+q */
+#if defined(MACOSX) || defined(__amigaos__)
+    case U4_META + 'q': /* Cmd+q; on the Amiga, Right Amiga+q */
     case U4_META + 'x': /* Cmd+x */
     //case U4_META + 'Q':   // Handle shifted version?
     //case U4_META + 'X':
