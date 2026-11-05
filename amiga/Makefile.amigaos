@@ -34,7 +34,7 @@ VERSION = 1.1svn
 
 DEFS    = -D__amigaos__ -DVERSION=\"$(VERSION)\" -DNO_SDL_GLU
 INC     = -Isrc -I$(KIT)/include/SDL -I$(DEPS)/include
-CFLAGS  = -noixemul $(OPT) $(CPU) $(DEFS) $(INC)
+CFLAGS  = -noixemul $(OPT) $(CPU) $(DEFS) $(INC) -MMD -MP
 CXXFLAGS = $(CFLAGS) -std=gnu++98 -Wno-deprecated-declarations
 LDFLAGS = -noixemul $(CPU) -Wl,-Map,$(BUILD)/$(PROG).map
 LIBS    = -L$(DEPS)/lib -L$(KIT)/lib -lxml2 -lpng -lz -lSDL -lm -lpthread
@@ -112,6 +112,8 @@ dist: $(BUILD)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING amiga/Licences.txt
 	cp amiga/Install-xu4 amiga/Install-xu4.info $(DIST)/
 
 objs: $(OBJS)
+
+-include $(OBJS:.o=.d)
 
 clean:
 	rm -rf $(OBJDIR) $(BUILD)/$(PROG) $(BUILD)/$(PROG).map
