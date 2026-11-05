@@ -56,7 +56,8 @@ OBJS    = $(CSRCS:%.c=$(OBJDIR)/%.o) $(CXXSRCS:%=$(OBJDIR)/src/%.o) \
           $(OBJDIR)/amiga/sound_amiga.o $(OBJDIR)/amiga/stb_vorbis.o \
           $(OBJDIR)/amiga/amiga_sys.o $(OBJDIR)/amiga/stack.o
 
-ICONS   = $(wildcard amiga/icons/*.info)
+ICONS   = amiga/icons/xu4.info amiga/icons/ReadMe.info amiga/icons/Data.info \
+          amiga/icons/xu4-drawer.info amiga/Install-xu4 amiga/Install-xu4.info
 
 all: $(BUILD)/$(PROG)
 
@@ -88,8 +89,9 @@ $(OBJDIR)/amiga/%.o: amiga/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -Wall -c -o $@ $<
 
-# The program with upstream's data (conf/, graphics/, sound/: GPL 2 with
-# xu4) and the icons. Upstream's music (mid/) is left out: nothing plays it.
+# The program with the data upstream's own 'make install' installs (conf/,
+# sound/*.ogg and graphics/ but for fmtowns/; see amiga/Licences.txt) and
+# the icons. Upstream's music (mid/) is left out: nothing plays it.
 dist: $(BUILD)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING amiga/Licences.txt
 	rm -rf $(OUT) && mkdir -p $(OUT)/User
 	cp $(BUILD)/$(PROG) $(OUT)/
@@ -97,18 +99,17 @@ dist: $(BUILD)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING amiga/Licences.txt
 	cp conf/*.xml $(OUT)/conf/
 	cp conf/dtd/*.dtd $(OUT)/conf/dtd/
 	cp sound/*.ogg $(OUT)/sound/
-	for d in ega hires png vga vga2 new fmtowns; do \
+	for d in ega hires png vga vga2 new; do \
 	  mkdir -p $(OUT)/graphics/$$d && cp graphics/$$d/* $(OUT)/graphics/$$d/ ; done
 	cp AMIGA_PORT.md $(OUT)/ReadMe
 	cp README $(OUT)/ReadMe-xu4
 	cp COPYING $(OUT)/COPYING.txt
 	cp amiga/Licences.txt $(OUT)/Licences.txt
-	cp amiga/Install-xu4 $(OUT)/Install-xu4
-	if [ -n "$(ICONS)" ]; then \
-	  cp amiga/icons/xu4.info amiga/icons/ReadMe.info amiga/icons/Install-xu4.info $(OUT)/ && \
-	  for f in ReadMe-xu4 COPYING.txt Licences.txt; do cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done && \
-	  for d in conf graphics sound User; do cp amiga/icons/Data.info $(OUT)/$$d.info; done && \
-	  cp amiga/icons/xu4-drawer.info $(DIST)/xu4.info ; fi
+	cp amiga/icons/xu4.info amiga/icons/ReadMe.info $(OUT)/
+	for f in ReadMe-xu4 COPYING.txt Licences.txt; do cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done
+	for d in conf graphics sound User; do cp amiga/icons/Data.info $(OUT)/$$d.info; done
+	cp amiga/icons/xu4-drawer.info $(DIST)/xu4.info
+	cp amiga/Install-xu4 amiga/Install-xu4.info $(DIST)/
 
 objs: $(OBJS)
 
