@@ -8,7 +8,8 @@ and libxml2, before upstream moved to Allegro, OpenGL and Boron), for
 AmigaOS 3.2 on a 68040 or 68060 with an FPU and an RTG screen, on
 GFOpenGPU's SDL 1.2 (sdl12-compat on SDL 2).
 
-Status: see "Testing" at the end.
+Status: builds, starts and stops cleanly in the lab; not yet played,
+for want of the Ultima IV files (see "Testing" at the end).
 
 
 What you need
@@ -137,3 +138,22 @@ Licence
 xu4 is under the GNU GPL, version 2 or later (COPYING.txt); the port's
 files too. What else is in the package, and why Ultima IV is not, is in
 Licences.txt.
+
+
+Testing
+-------
+
+Tested in an AmiCradle lab (a copy of Instance-32: AmigaOS 3.2, 68040,
+RTG; the lab is muted, so no sound could be heard), 5 November 2026,
+without Ultima IV's files, which the port does not have:
+
+- With no Ultima IV files, xu4 stops at once with the requester saying
+  where they go, and quits cleanly.
+- With a placeholder AVATAR.EXE in ultima4/ (to get past that check),
+  xu4 parses conf/config.xml and its XInclude files with the static
+  libxml2, opens its 640x400 "Ultima IV" window on the Workbench (in
+  video RAM), and stops with upstream's "Unable to load the charset data
+  file" requester, as it must without the game; the window closes and no
+  screen is left behind.
+- Not yet seen: the title, play, saving and loading, sound, Right
+  Amiga+Q in play. Those need the real game files in the drawer.
