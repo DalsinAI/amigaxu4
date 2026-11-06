@@ -1,0 +1,40 @@
+xu4 for AmigaOS 3.x: what is in the package, and under which terms
+====================================================================
+
+The program
+-----------
+xu4 (https://github.com/xu4-engine/u4, tag pre-alleg, commit
+62f3d9096409b5c9a5337d45cb1d3eaa9827276c) is free software under the GNU
+General Public License, version 2 or later (COPYING.txt). Its authors are
+in upstream's AUTHORS file; the Ultima IV icon used for xu4 is Frank
+Wolter's, as AUTHORS says.
+
+The port's own files (amiga/, and the changes marked __amigaos__ in src/)
+are by the AmiCradle Team, under the GPL 2 or later like xu4.
+
+Built into the program:
+- zlib 1.3.1 (Jean-loup Gailly and Mark Adler): the zlib licence.
+- libpng 1.6.44: the PNG Reference Library License version 2.
+- libxml2 2.9.14 (Daniel Veillard and others): the MIT licence.
+- stb_vorbis 1.22 (Sean Barrett): public domain, or the MIT licence.
+- GFOpenGPU's SDL 1.2 (sdl12-compat on SDL 2): the zlib licence.
+
+The data in the drawer
+----------------------
+conf/, sound/*.ogg and graphics/ (ega, hires, png, vga, vga2, new) are the
+files upstream's own 'make install' puts beside xu4, from xu4's GPL
+source tree. Upstream gives no licence of their own for the pictures and
+sounds beyond the tree's COPYING; some of the pictures are redrawings of
+Ultima IV's tiles. graphics/fmtowns (the FM Towns release's pictures) and
+upstream's music (mid/: MIDI, MP3 and Impulse Tracker files, which this
+port does not play) are not in the package.
+
+Ultima IV itself: NOT in the package
+------------------------------------
+xu4 needs the PC (DOS) version of Ultima IV: Quest of the Avatar, (c) 1985
+Origin Systems, now Electronic Arts. It is given away free (GOG.com has
+it as a free download), but it is not free to pass on: Electronic Arts
+keeps the copyright and has said that copies may only come from where it
+offers them (it had fan sites take their copies down in 2011). So the
+port ships none of its files; the player downloads the game and puts its
+files in the drawer (see the ReadMe).

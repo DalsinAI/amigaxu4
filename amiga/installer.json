@@ -1,0 +1,14 @@
+{
+  "name": "xu4 (Ultima IV)",
+  "version": "1.1svn-amigaos3-test1",
+  "drawer": "xu4",
+  "program": "xu4",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 12000000,
+  "modules": ["SDL2.module"],
+  "keep": ["User", "ultima4"],
+  "parent": "Work:Games",
+  "badge": "icons/art/xu4.png",
+  "script": "Install-xu4"
+}

@@ -50,7 +50,14 @@ using std::string;
 #define DEFAULT_CYCLES_PER_SECOND       4
 #define DEFAULT_ANIMATION_FRAMES_PER_SECOND 24
 #define DEFAULT_DEBUG                   0
+#ifdef __amigaos__
+/* The external DTDs are never loaded, so validating only prints "No
+ * declaration" for every element (as upstream's own note in config.cpp
+ * says); on a 68k it also costs seconds at start-up. */
+#define DEFAULT_VALIDATE_XML            0
+#else
 #define DEFAULT_VALIDATE_XML            1
+#endif
 #define DEFAULT_SPELL_EFFECT_SPEED      10
 #define DEFAULT_CAMP_TIME               10
 #define DEFAULT_INN_TIME                8

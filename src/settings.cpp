@@ -80,12 +80,20 @@ Settings::Settings() {
  */
 void Settings::init(const bool useProfile, const string profileName) {
     if (useProfile) {
+#ifdef __amigaos__
+        userPath = "PROGDIR:User/profiles/";
+#else
         userPath = "./profiles/";
+#endif
         userPath += profileName.c_str();
         userPath += "/";
     } else {
 
-#if defined(MACOSX)
+#if defined(__amigaos__)
+        /* AmigaOS: the settings (xu4rc) and the saved game beside the
+         * program, in its User drawer. */
+        userPath = "PROGDIR:User/";
+#elif defined(MACOSX)
             FSRef folder;
             OSErr err = FSFindFolder(kUserDomain, kApplicationSupportFolderType, kCreateFolder, &folder);
             if (err == noErr) {

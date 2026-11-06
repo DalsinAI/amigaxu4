@@ -138,6 +138,13 @@ void U4PATH::initDefaultPaths() {
     //The first part of the path searched will be one of these root directories
 
     /*Try to cover all root possibilities. These can be added to by separate modules*/
+#ifdef __amigaos__
+    /* AmigaOS: everything is in the program's drawer (PROGDIR:), the
+     * Ultima IV files there or in its ultima4 drawer. The sub-paths
+     * below are joined by amigaJoin() (no "/" root, no "..").  */
+    rootResourcePaths.push_back("PROGDIR:");
+    rootResourcePaths.push_back("PROGDIR:ultima4");
+#else
     rootResourcePaths.push_back("");
     rootResourcePaths.push_back(".");
     rootResourcePaths.push_back("./ultima4");
@@ -146,6 +153,7 @@ void U4PATH::initDefaultPaths() {
     rootResourcePaths.push_back("C:");
     rootResourcePaths.push_back("C:/DOS");
     rootResourcePaths.push_back("C:/GAMES");
+#endif
 
     //The second (specific) part of the path searched will be these various subdirectories
 
@@ -658,6 +666,31 @@ vector<string> u4read_stringtable(U4FILE *f, long offset, int nstrings) {
     return strs;
 }
 
+#ifdef __amigaos__
+/* An AmigaDOS path from a root ("PROGDIR:" or "PROGDIR:ultima4"), a
+ * sub-path ("." "conf" "./sound") and a file name. A leading "/" would
+ * mean the parent drawer, so none is made; sub-paths going up ("../x")
+ * are left out (returns false). */
+static bool amigaJoin(char *out, size_t size, const string &root,
+                      const string &sub, const string &fname) {
+    string s = sub;
+    while (s.compare(0, 2, "./") == 0)
+        s.erase(0, 2);
+    if (s == ".")
+        s.clear();
+    if (s.compare(0, 2, "..") == 0)
+        return false;
+    string p = root;
+    if (!p.empty() && p[p.size() - 1] != ':' && p[p.size() - 1] != '/')
+        p += '/';
+    if (!s.empty())
+        p += s + '/';
+    p += fname;
+    snprintf(out, size, "%s", p.c_str());
+    return true;
+}
+#endif
+
 string u4find_path(const string &fname, std::list<string> specificSubPaths) {
     FILE *f = NULL;
 
@@ -690,7 +723,12 @@ string u4find_path(const string &fname, std::list<string> specificSubPaths) {
                     subItr!=specificSubPaths.end() && !f;
                     ++subItr) {
 
+#ifdef __amigaos__
+                if (!amigaJoin(path, sizeof(path), *rootItr, *subItr, fname))
+                    continue;
+#else
                 snprintf(path, sizeof(path), "%s/%s/%s", rootItr->c_str(), subItr->c_str(), fname.c_str());
+#endif
 
                 if (verbose) {
                     printf("trying to open %s\n", path);

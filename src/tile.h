@@ -5,6 +5,7 @@
 #ifndef TILE_H
 #define TILE_H
 
+#include <stdint.h>
 #include <string>
 
 #include "direction.h"

@@ -1,0 +1,124 @@
+# xu4 (Ultima IV recreated) for AmigaOS 3.x, 68040/68060 + FPU, on
+# GFOpenGPU's SDL 1.2 (sdl12-compat on SDL 2, in the stove).
+#
+#   make -f amiga/Makefile.amigaos -j4 dist STOVE=/path/to/os32-gcc16-open6
+#
+# STOVE is the GFOpenAmigaGCC 16.2.0-open6 stove (its prefix/ holds the
+# compiler, and prefix/m68k-amigaos/ the GFOpenGPU kit: libSDL.a and the
+# SDL headers). zlib, libpng and libxml2 are built static first by
+# amiga/deps/build-deps.sh (the tarballs are fetched once, SHA-256 checked,
+# into amiga/deps/cache). The sound effects (Ogg Vorbis) are decoded by
+# stb_vorbis (amiga/stb_vorbis.c) and mixed by amiga/sound_amiga.cpp on
+# SDL's audio; there is no music.
+#
+# Output: build/amigaos/xu4; 'dist' makes dist/xu4/ (the program, conf/,
+# graphics/, sound/, the ReadMe and the licences, with GlowIcons) and
+# dist/xu4.info. The Ultima IV files are not in it (see AMIGA_PORT.md).
+
+STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16-open6
+PREFIX  = $(STOVE)/prefix
+KIT     = $(PREFIX)/m68k-amigaos
+CC      = $(PREFIX)/bin/m68k-amigaos-gcc
+CXX     = $(PREFIX)/bin/m68k-amigaos-g++
+CPU     ?= -m68040 -m68881
+# -fno-tree-loop-distribute-patterns: GCC 16's loop miscompile.
+OPT     ?= -O2 -fomit-frame-pointer -fno-tree-loop-distribute-patterns
+
+BUILD   = build/amigaos
+OBJDIR  = $(BUILD)/obj
+DEPS    = $(BUILD)/deps
+PROG    = xu4
+DIST    = dist
+OUT     = $(DIST)/xu4
+VERSION = 1.1svn
+
+DEFS    = -D__amigaos__ -DVERSION=\"$(VERSION)\" -DNO_SDL_GLU
+INC     = -Isrc -I$(KIT)/include/SDL -I$(DEPS)/include
+CFLAGS  = -noixemul $(OPT) $(CPU) $(DEFS) $(INC) -MMD -MP
+CXXFLAGS = $(CFLAGS) -std=gnu++98 -Wno-deprecated-declarations
+LDFLAGS = -noixemul $(CPU) -Wl,-Map,$(BUILD)/$(PROG).map
+LIBS    = -L$(DEPS)/lib -L$(KIT)/lib -lxml2 -lpng -lz -lSDL -lm -lpthread
+
+# Upstream's src/Makefile.common list, with sound_sdl.cpp (SDL_mixer)
+# replaced by amiga/sound_amiga.cpp.
+CSRCS   = src/lzw/hash.c src/lzw/lzw.c src/unzip.c
+CXXSRCS = annotation armor aura camp cheat city codex combat config \
+          controller context conversation creature death debug \
+          dialogueloader dialogueloader_hw dialogueloader_lb dialogueloader_tlk \
+          direction dungeon dungeonview error event event_sdl filesystem game io \
+          image_sdl imageloader imageloader_png imageloader_u4 imageloader_u5 \
+          imageloader_fmtowns imagemgr imageview intro item location map \
+          maploader mapmgr menu menuitem moongate movement names object person \
+          player portal progress_bar rle savegame scale script screen screen_sdl \
+          settings shrine spell stats textview tile tileanim tilemap tileset \
+          tileview u4 u4file utils view weapon xml lzw/u4decode lzw/u6decode
+OBJS    = $(CSRCS:%.c=$(OBJDIR)/%.o) $(CXXSRCS:%=$(OBJDIR)/src/%.o) \
+          $(OBJDIR)/amiga/sound_amiga.o $(OBJDIR)/amiga/stb_vorbis.o \
+          $(OBJDIR)/amiga/amiga_sys.o $(OBJDIR)/amiga/stack.o
+
+ICONS   = amiga/icons/xu4.info amiga/icons/ReadMe.info amiga/icons/Data.info \
+          amiga/icons/xu4-drawer.info amiga/Install-xu4 amiga/Install-xu4.info
+
+all: $(BUILD)/$(PROG)
+
+$(DEPS)/lib/libxml2.a:
+	sh amiga/deps/build-deps.sh $(PREFIX) $(DEPS)
+
+$(BUILD)/$(PROG): $(DEPS)/lib/libxml2.a $(OBJS)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+
+$(OBJS): | $(DEPS)/lib/libxml2.a
+
+$(OBJDIR)/src/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/src/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(OBJDIR)/amiga/stb_vorbis.o: amiga/stb_vorbis.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -DSTB_VORBIS_NO_PUSHDATA_API -DSTB_VORBIS_NO_STDIO -c -o $@ $<
+
+$(OBJDIR)/amiga/%.o: amiga/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -Wall -c -o $@ $<
+
+$(OBJDIR)/amiga/%.o: amiga/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -Wall -c -o $@ $<
+
+# The program with the data upstream's own 'make install' installs (conf/,
+# sound/*.ogg and graphics/ but for fmtowns/; see amiga/Licences.txt) and
+# the icons. Upstream's music (mid/) is left out: nothing plays it.
+dist: $(BUILD)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING amiga/Licences.txt
+	rm -rf $(OUT) && mkdir -p $(OUT)/User
+	cp $(BUILD)/$(PROG) $(OUT)/
+	mkdir -p $(OUT)/conf/dtd $(OUT)/sound
+	cp conf/*.xml $(OUT)/conf/
+	cp conf/dtd/*.dtd $(OUT)/conf/dtd/
+	cp sound/*.ogg $(OUT)/sound/
+	for d in ega hires png vga vga2 new; do \
+	  mkdir -p $(OUT)/graphics/$$d && cp graphics/$$d/* $(OUT)/graphics/$$d/ ; done
+	cp AMIGA_PORT.md $(OUT)/ReadMe
+	cp README $(OUT)/ReadMe-xu4
+	cp COPYING $(OUT)/COPYING.txt
+	cp amiga/Licences.txt $(OUT)/Licences.txt
+	cp amiga/icons/xu4.info amiga/icons/ReadMe.info $(OUT)/
+	for f in ReadMe-xu4 COPYING.txt Licences.txt; do cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done
+	for d in conf graphics sound User; do cp amiga/icons/Data.info $(OUT)/$$d.info; done
+	cp amiga/icons/xu4-drawer.info $(DIST)/xu4.info
+	cp amiga/Install-xu4 amiga/Install-xu4.info $(DIST)/
+
+objs: $(OBJS)
+
+-include $(OBJS:.o=.d)
+
+clean:
+	rm -rf $(OBJDIR) $(BUILD)/$(PROG) $(BUILD)/$(PROG).map
+
+distclean:
+	rm -rf $(BUILD) $(DIST)
+
+.PHONY: all dist objs clean distclean
